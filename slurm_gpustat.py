@@ -651,14 +651,10 @@ def gpu_usage(resources: dict, partition: Optional[str] = None) -> dict:
                     print(f"WARNING >>> {msg}")
                 else:
                     gpu_type = node_gpu_types[0]
-            if gpu_type in usage[user]:
-                usage[user][gpu_type][node_name]['n_gpu'] += num_gpus
-                usage[user][gpu_type][node_name]['bash_gpu'] += num_bash_gpus
-
-            else:
+            if not gpu_type in usage[user]:
                 usage[user][gpu_type] = defaultdict(lambda: {'n_gpu': 0, 'bash_gpu': 0})
-                usage[user][gpu_type][node_name]['n_gpu'] += num_gpus
-                usage[user][gpu_type][node_name]['bash_gpu'] += num_bash_gpus
+            usage[user][gpu_type][node_name]['n_gpu'] += num_gpus
+            usage[user][gpu_type][node_name]['bash_gpu'] += num_bash_gpus
 
     return usage
 
