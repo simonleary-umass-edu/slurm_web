@@ -488,7 +488,7 @@ def avail_stats_for_node(node: str) -> dict:
 
 @beartype
 def parse_all_gpus(partition: Optional[str] = None,
-                   default_gpus: int = 4,
+                   default_gpus: int = 0,
                    default_gpu_name: str = "NONAME_GPU") -> dict:
     """Query SLURM for the number and types of GPUs under management.
 
@@ -516,12 +516,15 @@ def parse_all_gpus(partition: Optional[str] = None,
     for row in rows:
         node_str, resource_strs = row.split("|")
         for resource_str in resource_strs.split(","):
-            if not resource_str.startswith("gpu"):
-                continue
             match = p.search(resource_str)
-            gpu_type = match.group(1) if match.group(1) is not None else default_gpu_name
-            # if the number of GPUs is not specified, we assume it is `default_gpus`
-            gpu_count = int(match.group(2)) if match.group(2) != "" else default_gpus
+            try:
+                gpu_type = match.group(1)
+            except AttributeError:
+                gpu_type = default_gpu_name
+            try:
+                gpu_count = int(match.group(2))
+            except AttributeError:
+                gpu_count = default_gpus
             node_names = parse_node_names(node_str)
             for name in node_names:
                 resources[name].append({"type": gpu_type, "count": gpu_count})
@@ -616,7 +619,7 @@ def gpu_usage(resources: dict, partition: Optional[str] = None) -> dict:
     for row in rows:
         tokens = row.split()
         # ignore pending jobs
-        if len(tokens) < 4 or not tokens[0].startswith(gpu_identifier):
+        if len(tokens) < 4:
             continue
         gpu_count_str, node_str, user, jobid = tokens
         gpu_count_tokens = gpu_count_str.split(":")
