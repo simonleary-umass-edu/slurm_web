@@ -624,7 +624,7 @@ def gpu_usage(resources: dict, partition: Optional[str] = None) -> dict:
         gpu_count_str, node_str, user, jobid = tokens
         gpu_count_tokens = gpu_count_str.split(":")
         if not gpu_count_tokens[-1].isdigit():
-            gpu_count_tokens.append("1")
+            gpu_count_tokens.append("0")
         num_gpus = int(gpu_count_tokens[-1])
         node_names = parse_node_names(node_str)
         for node_name in node_names:
