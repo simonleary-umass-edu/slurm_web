@@ -78,7 +78,7 @@ class Daemon:
         except OSError as err:
             sys.stderr.write('fork #2 failed: {0}\n'.format(err))
             sys.exit(1)
-        
+
         # redirect standard file descriptors
         sys.stdout.flush()
         sys.stderr.flush()
@@ -426,12 +426,12 @@ def lru_cache_time(seconds, maxsize=None):
     def wrapper(func):
         # Lazy function that makes sure the lru_cache() invalidate after X secs
         ttl_hash = lazy(lambda: round(time.time() / seconds), int)()
-        
+
         @functools.lru_cache(maxsize)
         def time_aware(__ttl, *args, **kwargs):
             """
-            Main wrapper, note that the first argument ttl is not passed down. 
-            This is because no function should bother to know this that 
+            Main wrapper, note that the first argument ttl is not passed down.
+            This is because no function should bother to know this that
             this is here.
             """
             def wrapping(*args, **kwargs):
@@ -478,7 +478,7 @@ def avail_stats_for_node(node: str) -> dict:
             # like 68G/257669M, rather than 68G/258G. The humanfriendly library provides
             # a more reliable number parser, and the humanize library provides a nice
             # formatter.
-            avail_val = humanize.naturalsize(hf.parse_size(cfg_val) - hf.parse_size(alloc_val), 
+            avail_val = humanize.naturalsize(hf.parse_size(cfg_val) - hf.parse_size(alloc_val),
                                              format="%d")
             cfg_val = humanize.naturalsize(hf.parse_size(cfg_val), format="%d")
             occupancy[metric] = f"{avail_val} / {cfg_val}"

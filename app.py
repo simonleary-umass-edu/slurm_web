@@ -60,8 +60,8 @@ def parse_leaderboard():
     for user, subdict in sorted(aggregates.items(),
                                 key=lambda x: sum(x[1]['n_gpu'].values()), reverse=True):
         total = f"total={str(sum(subdict['n_gpu'].values())):2s}"
-        user_summary = [f"{key}={val}" for key, val in sorted(subdict['n_gpu'].items(), 
-                                                               key=lambda x: CAPABILITY.get(x[0], 10.0), 
+        user_summary = [f"{key}={val}" for key, val in sorted(subdict['n_gpu'].items(),
+                                                               key=lambda x: CAPABILITY.get(x[0], 10.0),
                                                                reverse=True)]
         summary_str = ''.join([f'{i:12s}' for i in user_summary])
         num_new_gpus = [val for key, val in subdict['n_gpu'].items() if key not in OLD_GPU_TYPES]
@@ -131,7 +131,7 @@ def parse_cpu_usage_to_table(partition='compute', show_bar=True):
     res_total_by_type = defaultdict(list)
     for node, spec in res_total.items():
         res_total_by_type[spec["type"]].append({"node": node, "count": spec["count"]})
-    
+
     res_usage_by_type = defaultdict(list)
     for node, spec in res.items():
         res_usage_by_type[spec["type"]].append({"node": node, "count": spec["count"]})
@@ -141,7 +141,7 @@ def parse_cpu_usage_to_table(partition='compute', show_bar=True):
     avail_cpu_count = 0
 
     # sort cpus from new to old
-    type_list = sorted(list(res_total_by_type.keys()), 
+    type_list = sorted(list(res_total_by_type.keys()),
                        reverse=True)
 
     # writing the html table
@@ -160,7 +160,7 @@ def parse_cpu_usage_to_table(partition='compute', show_bar=True):
                 users = f"<td>user: {','.join(users)}</td>"
             else:
                 users = f"<td>&nbsp</td>"
-            
+
             detail_dict = avail_stats_for_node(node)
             detail_dict = {k: v for k, v in detail_dict.items() if k in ['cpu', 'mem']}
 
@@ -180,27 +180,27 @@ def parse_cpu_usage_to_table(partition='compute', show_bar=True):
                 mem_bar = detail_dict['mem']
             cpu_stat = f"<td>cpu: {cpu_bar}</td>"
             mem_stat = f"<td>mem: {mem_bar}</td>"
-            
+
             node_summary = f'<tr><td>&nbsp</td>{node_name}{cpu_stat}{mem_stat}{users}</tr>'
             node_summaries.append(node_summary)
             num_col.append(5)
-            
+
 
         type_summary = (f'<tr><td colspan="{max(num_col)}"><b>'
                         f'{cpu_type}: </b></td></tr>')
         table_html.append(type_summary)
         table_html.extend(node_summaries)
-        
+
 
     if show_bar:
-        total_bar = get_resource_bar(avail_cpu_count, total_cpu_count, 
+        total_bar = get_resource_bar(avail_cpu_count, total_cpu_count,
                                     text=f'{avail_cpu_count} / {total_cpu_count}')
         total_summary = (f'<tr><td colspan="{max(num_col)}"><h3>'
                      f'Summary: {total_bar} cpus available</h3></td></tr>')
     else:
         total_bar = f'{avail_cpu_count}/{total_cpu_count}'
         total_summary = ''
-    
+
     table_html = f"<table>{total_summary}{''.join(table_html)}</table>"
 
     return table_html
@@ -232,8 +232,8 @@ def parse_usage_to_table(show_bar=True):
     avail_gpu_count = 0
 
     # sort gpus from new to old
-    type_list = sorted(list(res_total_by_type.keys()), 
-                       key=lambda x: CAPABILITY.get(x, 10.0), 
+    type_list = sorted(list(res_total_by_type.keys()),
+                       key=lambda x: CAPABILITY.get(x, 10.0),
                        reverse=True)
 
     # writing the html table
@@ -246,22 +246,22 @@ def parse_usage_to_table(show_bar=True):
 
         node_summaries = []
         num_col = []
-    
+
         for node in node_names:
             node_name = f'<td>{node}</td>'
             if show_bar:
-                gpu_bar = get_resource_bar(gpu_count_avail[node], gpu_count_total[node], 
-                                        text=f"{gpu_count_avail[node]} / {gpu_count_total[node]}") 
+                gpu_bar = get_resource_bar(gpu_count_avail[node], gpu_count_total[node],
+                                        text=f"{gpu_count_avail[node]} / {gpu_count_total[node]}")
             else:
                 gpu_bar = f'{gpu_count_avail[node]}/{gpu_count_total[node]}'
             gpu_stat = f'<td>gpu: {gpu_bar}</td>'
-            
+
             users = [user for user in usage if node in usage[user].get(gpu_type, [])]
             if len(users):
                 users = f"<td>user: {','.join(users)}</td>"
             else:
                 users = f"<td>&nbsp</td>"
-            
+
             detail_dict = avail_stats_for_node(node)
             detail_dict = {k: v for k, v in detail_dict.items() if k in ['cpu', 'mem']}
 
@@ -278,11 +278,11 @@ def parse_usage_to_table(show_bar=True):
                 mem_bar = detail_dict['mem']
             cpu_stat = f"<td>cpu: {cpu_bar}</td>"
             mem_stat = f"<td>mem: {mem_bar}</td>"
-            
+
             node_summary = f'<tr><td>&nbsp</td>{node_name}{gpu_stat}{cpu_stat}{mem_stat}{users}</tr>'
             node_summaries.append(node_summary)
             num_col.append(6)
-        
+
         if show_bar:
             type_bar = get_resource_bar(sum(gpu_count_avail.values()), sum(gpu_count_total.values()),
                                         text=f'{sum(gpu_count_avail.values())} / {sum(gpu_count_total.values())}')
@@ -296,7 +296,7 @@ def parse_usage_to_table(show_bar=True):
         avail_gpu_count += sum(gpu_count_avail.values())
 
     if show_bar:
-        total_bar = get_resource_bar(avail_gpu_count, total_gpu_count, 
+        total_bar = get_resource_bar(avail_gpu_count, total_gpu_count,
                                     text=f'{avail_gpu_count} / {total_gpu_count}')
     else:
         total_bar = f'{avail_gpu_count}/{total_gpu_count}'
@@ -310,7 +310,7 @@ def parse_usage_to_table(show_bar=True):
 
 def parse_queue_to_table():
     """Request pending queue, keep the raw formatting."""
-    
+
     out = parse_cmd('squeue -t PENDING')
     out = '\n'.join(out)
     return out
@@ -318,8 +318,8 @@ def parse_queue_to_table():
 
 def parse_disk_io():
     """Measure disk reading speed, parse the output to a html table.
-    
-    Pre-requisite: create a byte file by running 
+
+    Pre-requisite: create a byte file by running
     `dd if=/dev/zero of=/your/path/test.img bs=512MB count=1 oflag=dsync`."""
 
     try:
@@ -333,7 +333,7 @@ def parse_disk_io():
     try:
         beegfs_fast_read = check_output(
             'dd if=/scratch/shared/beegfs/htd/DATA/tmp/test.img of=/dev/null bs=512MB count=1 oflag=dsync',
-            stderr=STDOUT, shell=True).decode("utf-8") 
+            stderr=STDOUT, shell=True).decode("utf-8")
         beegfs_fast_read = beegfs_fast_read.split('\n')[-2].split(',')[-1].strip()
     except:
         beegfs_fast_read = 'N/A'
@@ -341,7 +341,7 @@ def parse_disk_io():
     try:
         beegfs_normal_read = check_output(
             'dd if=/scratch/shared/beegfs/htd/tmp/test.img of=/dev/null bs=512MB count=1 oflag=dsync',
-            stderr=STDOUT, shell=True).decode("utf-8") 
+            stderr=STDOUT, shell=True).decode("utf-8")
         beegfs_normal_read = beegfs_normal_read.split('\n')[-2].split(',')[-1].strip()
     except:
         beegfs_normal_read = 'N/A'
@@ -349,7 +349,7 @@ def parse_disk_io():
     try:
         work_normal_read = check_output(
             'dd if=/work/htd/Desktop_tmp/tmp/test.img of=/dev/null bs=512MB count=1 oflag=dsync',
-            stderr=STDOUT, shell=True).decode("utf-8") 
+            stderr=STDOUT, shell=True).decode("utf-8")
         work_normal_read = work_normal_read.split('\n')[-2].split(',')[-1].strip()
     except:
         work_normal_read = 'N/A'
