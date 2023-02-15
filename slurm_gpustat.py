@@ -34,7 +34,6 @@ from django.utils.functional import lazy
 
 # SLURM states which indicate that the node is not available for submitting jobs
 INACCESSIBLE = {"drain*", "down*", "drng", "drain", "down"}
-INTERACTIVE_CMDS = {"bash", "zsh", "sh"}
 
 
 class Daemon:
@@ -624,10 +623,6 @@ def gpu_usage(resources: dict, partition: Optional[str] = None) -> dict:
         if not gpu_count_tokens[-1].isdigit():
             gpu_count_tokens.append("1")
         num_gpus = int(gpu_count_tokens[-1])
-        # get detailed job information, to check if using bash
-        detailed_output = parse_cmd(detailed_job_cmd % jobid, split=False)
-        is_bash = any([f'Command={x}\n' in detailed_output for x in INTERACTIVE_CMDS])
-        num_bash_gpus = num_gpus * is_bash
         node_names = parse_node_names(node_str)
         for node_name in node_names:
             # If a node still has jobs running but is draining, it will not be present
@@ -652,9 +647,8 @@ def gpu_usage(resources: dict, partition: Optional[str] = None) -> dict:
                 else:
                     gpu_type = node_gpu_types[0]
             if not gpu_type in usage[user]:
-                usage[user][gpu_type] = defaultdict(lambda: {'n_gpu': 0, 'bash_gpu': 0})
+                usage[user][gpu_type] = defaultdict(lambda: {'n_gpu': 0})
             usage[user][gpu_type][node_name]['n_gpu'] += num_gpus
-            usage[user][gpu_type][node_name]['bash_gpu'] += num_bash_gpus
 
     return usage
 
@@ -674,13 +668,10 @@ def in_use(resources: dict = None, partition: Optional[str] = None):
         aggregates[user] = {}
         aggregates[user]['n_gpu'] = {key: sum([x['n_gpu'] for x in val.values()])
                                      for key, val in subdict.items()}
-        aggregates[user]['bash_gpu'] = {key: sum([x['bash_gpu'] for x in val.values()])
-                                        for key, val in subdict.items()}
     print("Usage by user:")
     for user, subdict in sorted(aggregates.items(),
                                 key=lambda x: sum(x[1]['n_gpu'].values())):
-        total = (f"total: {str(sum(subdict['n_gpu'].values())):2s} "
-                 f"(interactive: {str(sum(subdict['bash_gpu'].values())):2s})")
+        total = f"total: {str(sum(subdict['n_gpu'].values())):2s}"
         summary_str = ", ".join([f"{key}: {val}" for key, val in subdict['n_gpu'].items()])
         print(f"{user:10s} [{total}] {summary_str}")
 

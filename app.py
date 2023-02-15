@@ -54,8 +54,6 @@ def parse_leaderboard():
         aggregates[user] = {}
         aggregates[user]['n_gpu'] = {key: sum([x['n_gpu'] for x in val.values()])
                                      for key, val in subdict.items()}
-        aggregates[user]['bash_gpu'] = {key: sum([x['bash_gpu'] for x in val.values()])
-                                        for key, val in subdict.items()}
     out = ""
     for user, subdict in sorted(aggregates.items(),
                                 key=lambda x: sum(x[1]['n_gpu'].values()), reverse=True):
@@ -66,7 +64,6 @@ def parse_leaderboard():
         summary_str = ''.join([f'{i:12s}' for i in user_summary])
         num_new_gpus = [val for key, val in subdict['n_gpu'].items() if key not in OLD_GPU_TYPES]
         total += f"|newer={str(sum(num_new_gpus)):2s}"
-        total += f"|bash={str(sum(subdict['bash_gpu'].values())):2s}"
         out += f"{user:12s}[{total}]    {summary_str}\n"
     return out
 
