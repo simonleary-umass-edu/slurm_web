@@ -11,7 +11,7 @@
 <header>
     <h1>VGG Triton Monitor: {{ hostname }}</h1>
     <button style="float: right;" onclick="ToggleDarkFn()">Toggle Dark Mode</button>
-     
+
     <script>
         var dark_mode_enabled = localStorage.getItem('colorScheme');
         console.log(dark_mode_enabled);
@@ -57,7 +57,7 @@
         function ToggleDarkFn() {
             var element = document.body;
             element.classList.toggle("dark");
-            
+
             if (dark_mode_enabled ==="true"){
                 dark_mode_enabled = "false";
                 localStorage.setItem('colorScheme', false);
@@ -84,7 +84,7 @@
             var b = document.querySelectorAll(".progress");
             darkModeChildren(b);
 
-        }   
+        }
     </script>
     <h3><div id="clock"></div></h3>
     <hr>
@@ -121,7 +121,7 @@
 
 <footer>
     <hr>
-    <p>Ref: VGG Triton info page 
+    <p>Ref: VGG Triton info page
         (<a href="https://www.robots.ox.ac.uk/~vgg/internal/wiki/doku.php/triton"
         >https://www.robots.ox.ac.uk/~vgg/internal/wiki/doku.php/triton</a>)</p>
     <p>Source code: <a href="https://github.com/TengdaHan/slurm_web"
@@ -180,7 +180,7 @@
                 response.text().then(t => {queue.innerHTML = t;darkMode();})
             });
         }, interval);
-    
+
     var leaderboard = document.getElementById("leaderboard");
     fetch("{{ url_for('leaderboard') }}")
         .then(response => {
@@ -244,7 +244,7 @@
         border-width: 1px;
         /* border-color: #646464; */
         outline: none;
-        border-radius: 3px; 
+        border-radius: 3px;
         width: 100px;
         height: 20px;
         box-shadow: 1px 1px 4px rgba(128, 128, 128, 0.2);
@@ -270,7 +270,7 @@
         border-width: 1px;
         outline: none;
         /* border-color: #646464; */
-        border-radius: 3px; 
+        border-radius: 3px;
         width: 200px;
         height: 20px;
         box-shadow: 1px 1px 4px rgba(128, 128, 128, 0.2);
