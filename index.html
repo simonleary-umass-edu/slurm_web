@@ -97,10 +97,10 @@
 <div id="resource"> </div>
 <br>
 
-<!-- <hr>
+<hr>
 <h2> CPUs available:</h2>
 <div id="cpu_resource"> </div>
-<br> -->
+<br>
 
 <hr>
 <h2> GPU Leaderboard:</h2>
@@ -168,6 +168,18 @@
         .then(response => {
                 response.text().then(t => {resource.innerHTML = t;darkMode();})});
         }, interval);
+
+    var cpu_resource = document.getElementById("cpu_resource");
+    fetch("{{ url_for('cpu_resource') }}")
+        .then(response => {
+                response.text().then(t => {cpu_resource.innerHTML = t;darkMode();})
+            });
+    setInterval(() => {
+        fetch("{{ url_for('cpu_resource') }}")
+        .then(response => {
+                response.text().then(t => {cpu_resource.innerHTML = t;darkMode();})
+            });
+        }, 1000 * 60 * 15);
 
     var queue = document.getElementById("queue");
     fetch("{{ url_for('queue') }}")

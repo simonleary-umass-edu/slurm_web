@@ -23,6 +23,9 @@ GMEM = {'a6000': '[48g]', 'a40': '[48g]', 'a30': '[24g]',
         'rtx6k': '[24g]', 'rtx8k': '[48g]'}
 OLD_GPU_TYPES = ['p40', 'm40']
 
+# partition used for slurm queries during cpu_usage() and parse_cpu_usage_to_table()
+# can be set to None to use all partitions
+CPU_SLURM_PARTITION = None
 
 def get_resource_bar(avail, total, text='', long=False):
     """Create a long/short progress bar with text overlaid. Formatting handled in css."""
@@ -68,7 +71,7 @@ def parse_leaderboard():
     return out
 
 
-def cpu_usage(resources, partition='compute'):
+def cpu_usage(resources, partition=CPU_SLURM_PARTITION):
     """Build a data structure of the CPU resource usage, organised by user.
 
     Args:
@@ -77,10 +80,12 @@ def cpu_usage(resources, partition='compute'):
     Returns:
         (dict): a summary of resources organised by user (and also by node name).
     """
-    cmd = "squeue -O NumNodes:100,nodelist:100,username:100,jobid:100 --noheader"
+    cmd = f"squeue -O NumNodes:100,nodelist:100,username:100,jobid:100 --noheader"
     if partition:
         cmd += f" --partition={partition}"
     rows = parse_cmd(cmd)
+    if len(rows) == 0:
+        raise Exception(f"slurm query \"{cmd}\" returned nothing! Is the partition correct?")
     usage = defaultdict(dict)
     for row in rows:
         tokens = row.split()
@@ -105,10 +110,15 @@ def cpu_usage(resources, partition='compute'):
     return usage
 
 
-def parse_cpu_usage_to_table(partition='compute', show_bar=True):
+def parse_cpu_usage_to_table(partition=CPU_SLURM_PARTITION, show_bar=True):
     """Request sinfo for cnode, parse the output to a html table."""
 
-    node_str = parse_cmd(f"sinfo -o '%1000N' --noheader --partition={partition}")
+    cmd = f"sinfo -o '%1000N' --noheader"
+    if partition:
+        cmd += f" --partition={partition}"
+    node_str = parse_cmd(cmd)
+    if len(node_str) == 0:
+        raise Exception(f"slurm query \"{cmd}\" returned nothing! Is the partition correct?")
     assert isinstance(node_str, list) and len(node_str) == 1
     node_names = parse_node_names(node_str[0].strip())
     resources = {k:{'type': k[0:6]+'xx', 'count': 1} for k in node_names}
@@ -414,12 +424,12 @@ def main():
             yield out
         return Response(generate(), mimetype='text')
 
-    # @app.route('/cpu_resource')
-    # def cpu_resource():
-    #     def generate():
-    #         out = parse_cpu_usage_to_table()
-    #         yield out
-    #     return Response(generate(), mimetype='text')
+    @app.route('/cpu_resource')
+    def cpu_resource():
+        def generate():
+            out = parse_cpu_usage_to_table()
+            yield out
+        return Response(generate(), mimetype='text')
 
     app.run(host=args.host, port=args.port)
 
